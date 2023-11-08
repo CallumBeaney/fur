@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fur/singleton.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 // TO RUN LOCALLY: flutter run -d chrome
 // flutter build web
 
 const int _transitionRateInMs = 3500;
 const int _fadeDurationInMs = 2000;
+final Uri _url = Uri.parse('http://kitagawakoji.com');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,12 +48,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   Timer? _timer;
+  bool _isHovered = false;
 
   @override
   void initState() {
     /// This determines how often the images change.
     super.initState();
     _timer = Timer.periodic(const Duration(milliseconds: _transitionRateInMs), (timer) async {
+      /// This callback is executed at intervals as per the Duration defined above
       if (mounted) {
         setState(() {
           if (_currentIndex + 1 == locator<List<AssetImage>>().length) {
@@ -135,20 +138,42 @@ class _MyHomePageState extends State<MyHomePage> {
               child: getImageWithMergeTransition(_currentIndex),
             ),
           ),
-          const Positioned(
+          Positioned(
             bottom: 30.0,
             right: 40.0,
-            child: Text(
-              'FUR\nKOJI KITAGAWA',
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 15.0,
-                color: Color.fromARGB(255, 230, 230, 230),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              onEnter: (_) {
+                setState(() {
+                  _isHovered = true;
+                });
+              },
+              onExit: (_) {
+                setState(() {
+                  _isHovered = false;
+                });
+              },
+              child: GestureDetector(
+                onTap: _launchUrl,
+                child: Text(
+                  'FUR\nKOJI KITAGAWA',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    color: _isHovered ? Colors.black87 : Colors.grey.shade100,
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+Future<void> _launchUrl() async {
+  if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
   }
 }
