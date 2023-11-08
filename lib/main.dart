@@ -5,8 +5,8 @@ import 'package:fur/singleton.dart';
 // TO RUN LOCALLY: flutter run -d chrome
 // flutter build web
 
-const int _imageTransitionRateInMilliseconds = 3500;
-const int _imageFadeDurationInMilliseconds = 2250;
+const int _transitionRateInMs = 3500;
+const int _fadeDurationInMs = 2000;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,17 +51,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     /// This determines how often the images change.
-    /// I am simply too lazy to instigate a proper cubit-based state machine for such a simple program and I'm sorry but also not
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: _imageTransitionRateInMilliseconds),
-        (timer) async {
+    _timer = Timer.periodic(const Duration(milliseconds: _transitionRateInMs), (timer) async {
       if (mounted) {
         setState(() {
           if (_currentIndex + 1 == locator<List<AssetImage>>().length) {
             locator<List<AssetImage>>().shuffle();
             _currentIndex = 0;
           } else {
-            _currentIndex = _currentIndex + 1;
+            _currentIndex++;
           }
         });
       }
@@ -74,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  dynamic getImage(int index) {
+  dynamic getImageWithBrightFadeTransition(int index) {
     if (index == 0) {
       /// first image ever loaded/image in sequence
       return Image(image: locator<List<AssetImage>>()[index], fit: BoxFit.cover);
@@ -87,6 +85,39 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Widget getImageWithMergeTransition(int index) {
+    // print('$index -- ${locator<List<AssetImage>>()[index].assetName}');
+    if (index == 0) {
+      return Image(
+        image: locator<List<AssetImage>>()[index],
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Stack(
+        fit: StackFit.expand, // the stack will expand to the sixe of the SizedBox hosting it below.
+        children: [
+          Opacity(
+            /// Opacity gets a double from 0 - 1. You get the remainder of the transition rate e.g. where tick is 350 and transitionRate is 3500, (350ms MOD 3500ms) resolves to a remainder of 350, and then divide that result by the transitionRate so e.g. 350/3500 = 0.1. And 1 - 0.1 = 0.9, so the opacity will be 0.9 so this image image will be mostly solid. This way this top Opacity layer begins at 1 and goes down to 0.
+            /// The opposite happens in the other opacity-wrapped image layer in this Stack.
+            /// Because the transitionRate and the max duration of the timer correspond, the modulo operation is superfluous.
+            opacity: 1 - (_timer!.tick % _transitionRateInMs) / _transitionRateInMs,
+            child: Image(
+              image: locator<List<AssetImage>>()[index - 1],
+              fit: BoxFit.cover,
+            ),
+          ),
+          Opacity(
+            opacity: (_timer!.tick % _transitionRateInMs) / _transitionRateInMs,
+            child: Image(
+              image: locator<List<AssetImage>>()[index],
+              fit: BoxFit.cover,
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,13 +126,13 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           AnimatedSwitcher(
             /// this code determines the fading behaviour
-            duration: const Duration(milliseconds: _imageFadeDurationInMilliseconds),
+            duration: const Duration(milliseconds: _fadeDurationInMs),
             child: SizedBox(
               key: ValueKey<int>(_currentIndex),
               // These make the image fullscreen, and handles user resizing for you.
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              child: getImage(_currentIndex),
+              child: getImageWithMergeTransition(_currentIndex),
             ),
           ),
           const Positioned(
