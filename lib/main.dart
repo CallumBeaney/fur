@@ -47,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
+  // String _currentList = "pastels";
   Timer? _timer;
   bool _isHovered = false;
 
@@ -59,9 +60,12 @@ class _MyHomePageState extends State<MyHomePage> {
       if (mounted) {
         setState(() {
           if (_currentIndex + 1 == locator<List<AssetImage>>().length) {
+            // _currentList = _currentList == 'pastels' ? 'digis' : 'pastels';
+            // print('shuffling!');
             locator<List<AssetImage>>().shuffle();
             _currentIndex = 0;
           } else {
+            // print(locator<List<AssetImage>>()[_currentIndex]);
             _currentIndex++;
           }
         });
