@@ -8,23 +8,22 @@ GetIt locator = GetIt.instance;
 Future<void> setupSingleton() async {
   final List<AssetImage> pastelDogs = await getImageAssetList('assets/pastel/');
   final List<AssetImage> digiDogs = await getImageAssetList('assets/digi/');
-  final List<AssetImage> motoDogs = await getImageAssetList('assets/moto/');
 
   pastelDogs.shuffle();
   digiDogs.shuffle();
-  motoDogs.shuffle();
 
   insertListHalfway(pastelDogs, digiDogs);
-  pastelDogs.addAll(motoDogs);
-  pastelDogs.insert(0, const AssetImage('../assets/splash/splash.jpg'));
+  pastelDogs.insert(0, const AssetImage('../assets/splash/splash_original.jpg'));
+  pastelDogs.insert(pastelDogs.length, const AssetImage('../assets/splash/splash_tracks.jpg'));
 
   locator.registerSingleton<List<AssetImage>>(pastelDogs);
   return;
 }
 
 void insertListHalfway(List<AssetImage> originalList, List<AssetImage> insertionList) {
-  final insertionIndex = originalList.length ~/ 2;
+  final int insertionIndex = originalList.length ~/ 2;
   originalList.insertAll(insertionIndex, insertionList);
+  return;
 }
 
 /// If any non-images are in your assets directory, you're going to break this. MacOS auto-loads .DS_Store files into directories when viewed in Finder. In theory if you the assets directory in Terminal and run `rm .DS_Store` and then `defaults write com.apple.desktopservices.DSDontWriteNetworkStores -bool true` this will stop that happening. In practice Apple once again produce in me petty rage

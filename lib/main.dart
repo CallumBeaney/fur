@@ -5,15 +5,15 @@ import 'package:url_launcher/url_launcher.dart';
 // TO RUN LOCALLY: flutter run -d chrome
 // flutter build web
 
-const int _transitionRateInMs = 3500;
-const int _fadeDurationInMs = 2000;
+int _transitionRateInMs = 3350;
+int _fadeDurationInMs = 2350;
 final Uri _url = Uri.parse('http://kitagawakoji.com');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final Stopwatch timer = Stopwatch()..start();
+  // final Stopwatch timer = Stopwatch()..start();
   await setupSingleton();
-  timer.stop();
+  // timer.stop();
   // print('\n\tElapsed time for setup\n: ${timer.elapsed}');
   runApp(const MyApp());
 }
@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
     // const bool userOnMobileOrDesktop = kIsWeb; // this is a global constant defined by framework
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'FUR by KOJI KITAGAWA',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -47,7 +48,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  // String _currentList = "pastels";
   Timer? _timer;
   bool _isHovered = false;
 
@@ -55,13 +55,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     /// This determines how often the images change.
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: _transitionRateInMs), (timer) async {
+    _timer = Timer.periodic(Duration(milliseconds: _transitionRateInMs), (timer) async {
       /// This callback is executed at intervals as per the Duration defined above
       if (mounted) {
         setState(() {
           if (_currentIndex + 1 == locator<List<AssetImage>>().length) {
-            // _currentList = _currentList == 'pastels' ? 'digis' : 'pastels';
-            // print('shuffling!');
             locator<List<AssetImage>>().shuffle();
             _currentIndex = 0;
           } else {
@@ -133,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           AnimatedSwitcher(
             /// this code determines the fading behaviour
-            duration: const Duration(milliseconds: _fadeDurationInMs),
+            duration: Duration(milliseconds: _fadeDurationInMs),
             child: SizedBox(
               key: ValueKey<int>(_currentIndex),
               // These make the image fullscreen, and handles user resizing for you.
